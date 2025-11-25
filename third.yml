@@ -1,0 +1,14 @@
+---
+ - name: set password
+   hosts: all
+   become: yes
+
+   vars:
+           rug_password: "rug@123"
+
+   tasks:
+     - name: update password
+       user:
+              name: rug
+              password: "{{ rug_password | password_hash('sha512') }}"
+

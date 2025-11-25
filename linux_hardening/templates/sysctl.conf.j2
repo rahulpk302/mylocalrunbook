@@ -1,0 +1,4 @@
+# sysctl additions managed by Ansible
+{% for k,v in sysctl_settings.items() %}
+{{ k }} = {{ v }}
+{% endfor %}

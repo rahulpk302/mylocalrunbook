@@ -1,0 +1,66 @@
+---
+- name: Configure LVM 
+  hosts: all
+
+  vars:
+    pv_devices:
+      - /dev/nvme0n2p1
+      - /dev/nvme0n3p1
+    vg_name: my_vg
+    lv_name: my_lv
+    lv_size: 4G
+    mount_point: /mnt/mydata
+    filesystem_type: ext4
+    disk_device1: /dev/nvme0n2
+    disk_device2: /dev/nvme0n3
+    
+  tasks:
+    - name: Install LVM2 Package (If required)
+      ansible.builtin.yum:
+        name: lvm2
+        state: present
+
+    - name: create physical LVM partition
+      community.general.parted:
+        device: "{{ item  }}"
+        number: 1
+        state: present
+        part_type: primary
+        fs_type: linux-lvm
+        resize: yes
+      loop:
+        - "{{ disk_device1 }}"
+        - "{{ disk_device2  }}"
+
+    - name: create physical volumes
+      community.general.lvg:
+         vg: "{{ vg_name  }}"
+         pvs: "{{ pv_devices  }}"
+       # This step also creates the VG if it does not exist
+
+    - name: Create logical volume
+      community.general.lvol:
+        vg: "{{ vg_name }}"
+        lv: "{{ lv_name  }}"
+        size: "{{ lv_size  }}"
+        force: true
+
+    - name: create filesystem on logical volume
+      ansible.builtin.filesystem:
+        fstype: "{{ filesystem_type  }}"
+        dev: "/dev/{{ vg_name }}/{{ lv_name }}"
+
+    - name: Ensure mount point exists
+      ansible.builtin.file:
+        path: "{{ mount_point }}"
+        state: directory
+        mode: '0755'
+
+    - name: Mount LV
+      ansible.builtin.mount:
+        path: "{{ mount_point }}"
+        src: "/dev/{{  vg_name }}/{{ lv_name }}"
+        fstype: ext4
+        state: mounted
+
+...

@@ -1,0 +1,16 @@
+# Managed by Ansible - template based on policy
+
+# Managed by Ansible - template based on policy
+{{ '# default options preserved where needed' }}
+Port 22
+Protocol 2
+
+{% for k, v in sshd_config_extra.items() %}
+{{ k }} {{ v }}
+{% endfor %}
+
+# Use specified ciphers and MACs
+Ciphers {{ sshd_config_extra.Ciphers }}
+MACs {{ sshd_config_extra.MACs }}
+Banner /etc/issue
+

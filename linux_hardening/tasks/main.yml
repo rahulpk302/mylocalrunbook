@@ -1,0 +1,34 @@
+---
+# tasks file for linux_hardening
+#
+# top-level task includes
+
+- name: Include security patches
+  include_tasks: security_patches.yml
+
+- name: Include filesystem security
+  include_tasks: filesystem_security.yml
+
+- name: Include user accounts and policies
+  include_tasks: user_accounts.yml
+
+- name: Include login banner
+  include_tasks: login_banner.yml
+
+- name: Include auditing and logging
+  include_tasks: auditing_logging.yml
+
+- name: Include non essential services
+  include_tasks: services.yml
+
+- name: Include SSH configuration
+  include_tasks: ssh.yml
+
+- name: Include sysctl/network settings
+  include_tasks: network_settings.yml
+
+- name: Include system security options
+  include_tasks: system_security.yml
+
+- name: Ensure packages for antivirus/monitoring
+  include_tasks: antivirus.yml

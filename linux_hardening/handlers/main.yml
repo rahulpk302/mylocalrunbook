@@ -1,0 +1,20 @@
+---
+# handlers file for linux_hardening
+
+- name: restart sshd
+  service:
+    name: sshd
+    state: restarted
+- name: restart auditd
+  service:
+    name: auditd
+    state: restarted
+  ignore_errors: yes
+- name: restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+- name: restart ntpd
+  service:
+    name: chronyd
+    state: restarted

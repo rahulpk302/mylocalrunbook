@@ -1,0 +1,13 @@
+---
+# vars file for prodrole
+vars:
+    pv_devices:
+      - /dev/nvme0n2p1
+      - /dev/nvme0n3p1
+    vg_name: my_vg
+    lv_name: my_lv
+    lv_size: 4G
+    mount_point: /mnt/mydata
+    filesystem_type: ext4
+    disk_device1: /dev/nvme0n2
+    disk_device2: /dev/nvme0n3

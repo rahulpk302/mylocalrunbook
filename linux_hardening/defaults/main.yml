@@ -1,0 +1,106 @@
+---
+# defaults file for linux_hardening
+hardening_packages:
+  - gcc
+  - libgcc.i686
+  - glibc.i686
+  - ncompress
+  - sharutils
+  - kernel-devel
+  - openssh-server
+  - audit
+  - auditd
+  - rsyslog
+  - net-snmp
+  - ntp
+##########Password_Vars#############
+
+passwd_min_len: 8
+passwd_max_days: 30
+passwd_min_days: 1
+passwd_warn_age: 15
+pam_cracklib_options: 'retry=3 difok=3 minlen=8 ucredit=-1 lcredit=-1 dcredit=-1 ocredit=-1'
+
+
+ssh_banner: |
+  ********************************************************************************
+  WARNING: You have accessed a restricted system
+  You are required to have authorization before you proceed and you are strictly limited to the extent of that authorization. The usage of this system is being constantly monitored.
+  ********************************************************************************
+
+sshd_config_extra:
+  PermitRootLogin: 'no'
+  ServerKeyBits: '2048'
+  MaxAuthTries: '3'
+  ClientAliveInterval: '900'
+  ClientAliveCountMax: '0'
+  Ciphers: 'aes256-ctr,aes192-ctr,aes128-ctr'
+  MACs: 'hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com'
+
+sysctl_settings:
+  net.ipv4.icmp_echo_ignore_broadcasts: 1
+  net.ipv4.conf.all.accept_redirects: 0
+  net.ipv4.conf.all.send_redirects: 0
+  net.ipv4.conf.all.rp_filter: 1
+  net.ipv4.conf.default.rp_filter: 1
+  net.ipv4.conf.all.accept_source_route: 0
+  net.ipv4.tcp_max_syn_backlog: 4096
+  net.ipv4.tcp_syncookies: 1
+
+audit_max_log_file: '6'
+# Note: auditd expects max_log_file in MB in many distros, check auditd.conf format
+
+non_essential_services:
+  - chargen
+  - comsat
+  - daytime
+  - discard
+  - echo
+  - rexec
+  - finger
+  - ftp
+  - identd
+  - talk
+  - ntalk
+  - lpd
+  - rlogin
+  - netfs
+  - nfs
+  - nfslock
+  - portmap
+  - radvd
+  - rquotad
+  - rhnsd
+  - smtp
+  - snmp
+  - time
+  - telnet
+  - tftp
+  - walld
+  - xinetd
+  - ypserv
+  - uucp
+
+cron_allowed_users: root
+# files/paths to protect with audit
+#
+
+audit_watch_files:
+  - /etc/group
+  - /etc/passwd
+  - /etc/gshadow
+  - /etc/shadow
+  - /etc/security/opasswd
+  - /etc/issue
+  - /etc/issue.net
+  - /etc/hosts
+  - /etc/sysconfig/network
+  - /var/log/faillog
+  - /var/log/lastlog
+  - /var/log/tallylog
+  - /var/run/utmp
+  - /var/log/wtmp
+  - /var/log/btmp
+  - /var/log/sudo.log
+  - /etc/sudoers
+  - /etc/sudoers.d

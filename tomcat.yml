@@ -1,0 +1,65 @@
+---
+- name: install and configure Tomcat 9 on rhel8
+  hosts: all
+
+  vars:
+    tomcat_version: "9.0.64"
+    tomcat_user: "tomcat"
+    tomcat_group: "tomcat"
+    tomcat_install_dir: "/opt/apache-tomcat-{{ tomcat_version  }}"
+    tomcat_tarball_url: "https://archive.apache.org/dist/tomcat/tomcat-9/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz"
+
+  tasks:
+    - name: install java 11 openjdk (pre-requisite)
+      ansible.builtin.yum:
+        name: java-11-openjdk.x86_64
+        state: present
+    - name: create tomcatgroup
+      ansible.builtin.group:
+        name: "{{ tomcat_group  }}"
+        system: yes
+    - name: create tomcat user
+      ansible.builtin.user:
+        name: "{{ tomcat_user  }}"
+        group: "{{ tomcat_group  }}"
+        home: "/usr/share/tomcat"
+        shell: /bin/false
+        system: yes
+        create_home: no
+
+    - name: download tomcat tarball
+      ansible.builtin.get_url:
+        url: "{{ tomcat_tarball_url }}"
+        dest: "/opt/apache-tomcat-{{ tomcat_version }}.tar.gz"
+        mode: '0644'
+
+    - name: Extract Tomcat
+      ansible.builtin.unarchive:
+        src: "/opt/apache-tomcat-{{ tomcat_version }}.tar.gz"
+        dest: /opt
+        remote_src: yes
+        creates: "{{ tomcat_install_dir }}"
+    - name: set tomcat ownership on installation directory
+      ansible.builtin.file:
+         path: "{{ tomcat_install_dir }}"
+         state: directory
+         recurse: yes
+         owner: "{{ tomcat_user }}"
+         group: "{{ tomcat_group }}"
+
+    - name: Create symbolic links for startup script
+      ansible.builtin.file:
+         src: "{{ tomcat_install_dir }}/bin/startup.sh"
+         dest: /usr/local/bin/starttomcat
+         state: link
+         mode: '0755'
+
+    - name: Create symbolic link for shutdown script (shutdowntomcat)
+      ansible.builtin.file:
+        src: "{{ tomcat_install_dir }}/bin/shutdown.sh"
+        dest: /usr/local/bin/shutdowntomcat
+        state: link
+        mode: '0755'
+
+
+

@@ -1,0 +1,10 @@
+---
+- name: Package for cross OS
+  hosts: all
+
+  tasks:
+    - name: Install packeges using Package module
+      ansible.builtin.package:
+        name: "{{ package_name }}"
+        state: present
+

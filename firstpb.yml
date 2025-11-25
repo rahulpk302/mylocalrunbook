@@ -1,0 +1,16 @@
+---
+- name: install packages
+  hosts: all
+
+  tasks:
+   - name: install httpd
+     yum: 
+      name: httpd
+      state: present
+      update_cache: yes
+   - name: enable package
+     service:
+      name: httpd
+      state: started
+      enabled: yes
+

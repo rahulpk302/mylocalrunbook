@@ -1,0 +1,49 @@
+---
+- name: Enforce password policy in login.defs
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^PASS_MIN_LEN|^PASS_MAX_DAYS|^PASS_MIN_DAYS|^PASS_WARN_AGE'
+    line: ''
+    create: yes
+
+
+# using blockinfile for several lines
+- name: Set password aging in /etc/login.defs
+  blockinfile:
+    path: /etc/login.defs
+    block: |
+      PASS_MIN_LEN {{ passwd_min_len }}
+      PASS_MAX_DAYS {{ passwd_max_days }}
+      PASS_MIN_DAYS {{ passwd_min_days }}
+      PASS_WARN_AGE {{ passwd_warn_age }}
+
+
+- name: Ensure pam_cracklib or pam_pwquality configured (system dependent)
+  replace:
+    path: /etc/pam.d/system-auth
+    regexp: '^password\s+requisite\s+pam_cracklib\.so.*'
+    replace: 'password   requisite   pam_cracklib.so {{ pam_cracklib_options }}'
+  ignore_errors: yes
+
+
+- name: Ensure duplicate root UIDs are not present
+  shell: |
+    awk -F: '$3==0{print $1":"$3}' /etc/passwd
+  register: root_uid_users
+
+- name: Fail if unexpected users have UID 0 (except root)
+  fail:
+    msg: "Found non-root user(s) with UID 0: {{ root_uid_users.stdout_lines }}"
+  when: root_uid_users.stdout_lines | length > 1
+
+- name: Disable remote root in /etc/securetty (ensure default console only)
+  lineinfile:
+    path: /etc/securetty
+    regexp: '.*'
+    state: absent
+  ignore_errors: yes
+
+- name: Ensure single user mode protected by sulogin (systemd handles via rescue.target)
+  # This is distribution specific; ensure /sbin/sulogin exists and inittab is not used on systemd.
+  debug:
+    msg: 'Ensure single-user mode requires password: check rescue.target and emergency.target settings manually.'

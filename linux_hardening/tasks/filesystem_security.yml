@@ -1,0 +1,77 @@
+---
+- name: Ensure fstab mounts with desired options
+  mount:
+    path: "{{ item.path }}"
+    src: "{{ item.src }}"
+    fstype: "{{ item.opts }}"
+    state: mounted
+  loop: "{{ fstab_mounts }}"
+  ignore_errors: yes
+
+- name: Set umask in /etc/bashrc
+  lineinfile:
+     path: /etc/bashrc
+     regexp: '^umask'
+     line: 'umask 022'
+     create: yes
+
+- name: Ensure sticky bit set on /tmp
+  file:
+    path: /tmp
+    mode: '1777'
+    state: directory
+
+- name: Configure cron.allow
+  copy: 
+    dest: /etc/cron.allow
+    content: "{{ cron_allowed_users | join( '\n' ) }}\n"
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Create at.allow from cron.allow
+  copy:
+    src: /etc/cron.allow
+    dest: /etc/at.allow
+    remote_src: yes
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Secure passwd, shadow and group file ownership and permissions
+  file:
+    path: "{{ item.path }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: '/etc/passwd', mode: '0644' }
+    - { path: '/etc/group', mode: '0644' }
+    - { path: '/etc/shadow', mode: '0000' }
+
+- name: Ensure user home directories have 700 or stricter perms (non-system users)
+  find:
+    paths: /home
+    file_type: directory
+    recurse: no
+  register: homes
+
+- name: Set home dir permissions
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    owner: "{{ item.path | basename }}"
+    group: "{{ item.path | basename }}"
+    mode: '0700'
+  loop: "{{ homes.files }}"
+  when: (homes.files | length) > 0
+
+- name: Remove SUID from common binaries that should not have it
+  shell: |
+    for f in ping mount umount traceroute at; do
+      if [ -e "$(which $f 2>/dev/null)" ]; then
+        chmod u-s "$(which $f 2>/dev/null)" || true
+      fi
+    done
+  args:
+    executable: /bin/bash
+

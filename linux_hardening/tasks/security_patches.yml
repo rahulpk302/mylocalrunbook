@@ -1,0 +1,13 @@
+---
+- name: Ensure yum cache is up to date
+  yum:
+    name: '*'
+    state: latest
+  tags: patches
+
+- name: install required packages
+  yum:
+    name: "{{ hardening_packages | default([]) }}"
+    state: present
+  tags: packages
+  ignore_errors: yes

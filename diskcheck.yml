@@ -1,0 +1,39 @@
+---
+- name: disk check on remote server
+  hosts: rhel-test
+  become: yes
+
+  tasks: 
+   - name: disk utilization
+     ansible.builtin.command: df -h
+     register: base_disk
+
+   - name: display disk
+     ansible.builtin.debug:
+       var: base_disk.stdout
+       
+   - name: Save disk output to local file
+     copy:
+       content: "{{ base_disk.stdout }}"
+       dest: "/tmp/disk_{{ inventory_hostname }}.txt"
+#     delegate_to: localhost
+  tasks:
+    - name: sshd config file
+      ansible.builtin.template:
+        src: sshd.conf.j2
+        dest: /etc/ssh/sshd_conf
+      notify:
+              - Restart Apache
+              - Restart Sshd
+  handlers:
+    - name: Restart Apache
+      ansible.builtin.service:
+        name: httpd
+        state: restarted
+    - name: Restart Sshd
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+
+
+

@@ -1,0 +1,19 @@
+---
+- name: Ensure net-snmp installed (for monitoring)
+  yum:
+    name:
+      - net-snmp
+      - net-snmp-utils
+    state: present
+  ignore_errors: yes
+
+- name: Ensure ntp installed and enabled
+  yum:
+    name: chrony
+    state: present
+
+- name: Enable and start ntpd
+  service:
+    name: chronyd
+    enabled: yes
+    state: started

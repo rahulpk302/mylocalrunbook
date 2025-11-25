@@ -1,0 +1,44 @@
+---
+- name: nginx install and configure
+  hosts: all
+
+  tasks:
+    - name: install nginx
+      ansible.builtin.yum: 
+        name: nginx
+        state: present
+
+    - name: create directory on document root
+      ansible.builtin.file:
+              path: /usr/share/nginx/tomcatserver.tom.com
+              state: directory
+
+    - name: create index.html
+      ansible.builtin.copy:
+              dest: /usr/share/nginx/tomcatserver.tom.com/index.html
+              content: "<h1>Welcome to NGINX Server</h1>"
+              mode: '0644'
+
+    - name: copy config file
+      ansible.builtin.copy:
+              src: /root/myansible/confnginx.txt 
+              dest: /etc/nginx/conf.d/tomcatserver.tom.com.conf
+              mode: '0644'
+
+      notify:
+        - syntax check
+        - nginx restart
+
+    - name: stop firewalld
+      ansible.builtin.service:
+              name: firewalld.service
+              state: stopped
+
+  handlers:
+    - name: syntax check
+      ansible.builtin.shell: nginx -t
+
+    - name: nginx restart
+      ansible.builtin.service:
+              name: nginx
+              state: restarted

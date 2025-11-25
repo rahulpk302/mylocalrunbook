@@ -1,0 +1,9 @@
+---
+- name: Disable non-essential services (systemctl)
+  service:
+    name: "{{ item }}"
+    enabled: no
+    state: stopped
+  loop: "{{ non_essential_services }}"
+  ignore_errors: yes
+

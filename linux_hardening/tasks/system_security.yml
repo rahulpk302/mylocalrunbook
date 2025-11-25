@@ -1,0 +1,9 @@
+- name: Disable ctrl-alt-del target (systemd)
+  file:
+    src: /dev/null
+    path: /etc/systemd/system/ctrl-alt-del.target
+    state: link
+  notify: reboot_required
+
+- name: Create a handler-like reboot marker
+  meta: flush_handlers

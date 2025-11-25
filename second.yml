@@ -1,0 +1,15 @@
+---
+- name: User Management
+  hosts: awx
+  become: yes
+
+  tasks:
+    - name: create users
+      user:
+              name: rug
+              state: present
+              shell: /bin/shell
+              groups: rahul
+              append: yes
+              create_home: yes
+

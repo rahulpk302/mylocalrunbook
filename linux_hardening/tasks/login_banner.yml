@@ -1,0 +1,25 @@
+---
+- name: Install login banner to /etc/issue and related files
+  copy:
+    dest: /etc/issue
+    content: "{{ ssh_banner }}\n"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy issue to issue.net and motd
+  copy:
+    remote_src: yes
+    src: /etc/issue
+    dest: /etc/issue.net
+    owner: root
+    group: root
+    mode: '0644'
+
+- copy:
+    remote_src: yes
+    src: /etc/issue
+    dest: /etc/motd
+    owner: root
+    group: root
+    mode: '0644'

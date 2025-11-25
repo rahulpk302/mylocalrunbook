@@ -1,0 +1,79 @@
+---
+- name: install and configure httpd
+  hosts: centos
+
+  tasks:
+    - name: modify hosts file
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        line: "{{ item }}"
+        state: present
+        create: yes
+      loop:
+        - "192.168.198.135 srv1.centos.com"
+      tags: hosts
+      
+    - name: install httpd
+      ansible.builtin.yum:
+        name: httpd
+        state: present
+      tags: install
+
+    - name: make directory
+      ansible.builtin.file:
+        path: /var/www/html/myhostweb
+        state: directory
+        mode: '0755'
+      tags: makedir1
+        
+    - name: make directory
+      ansible.builtin.file:
+        path: /var/log/http/
+        state: directory
+        mode: '0755'
+      tags: makedir2
+
+    - name: page in the file
+      ansible.builtin.copy:
+        dest: /var/www/html/myhostweb/index.html
+        content: "*** this is hostweb machine  ***"
+        mode: '0644'
+
+    - name: add in firewall rule
+      ansible.builtin.firewalld:
+         service: "{{ item }}"
+         permanent: yes
+         state: enabled
+         immediate: yes
+         zone: public
+      loop:
+        - http
+        - https
+      ignore_errors: yes
+
+    - name: configure virtual host file
+      ansible.builtin.copy:
+         dest: /etc/httpd/conf.d/virtualhost.conf
+         content: |
+          <VirtualHost 192.168.198.135:80>
+            ServerName srv1.centos.com
+            ServerAlias www.srv1.centos.com
+            DocumentRoot /var/www/html/myhostweb
+            ErrorLog /var/log/http/myhostweb-error_log
+            CustomLog /var/log/http/myhostweb-access_log common
+          </VirtualHost>
+         owner: root
+         group: root
+         mode: '0644'
+
+      notify:
+         - reload httpd
+
+  handlers:
+    - name: reload httpd
+      ansible.builtin.service:
+        name: httpd
+        state: restarted
+        enabled: yes
+
+...

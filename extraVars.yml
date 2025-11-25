@@ -1,0 +1,15 @@
+---
+- name: Extra vars pass outside playbook
+  hosts: webhost
+
+  tasks:
+    - name: install packages
+      ansible.builtin.yum:
+        name: "{{ manual_package  }}"
+        state: "{{ install_remove }}"
+      
+    - name: enabled packages
+      ansible.builtin.service:
+        name: "{{ service }}"
+        state: restarted
+        enabled: yes 
