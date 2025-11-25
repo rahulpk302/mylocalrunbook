@@ -7,15 +7,18 @@
    - name: disk utilization
      ansible.builtin.command: df -h
      register: base_disk
+  tags: disksize
 
    - name: display disk
      ansible.builtin.debug:
        var: base_disk.stdout
-       
+  tags: diskoutput
+  
    - name: Save disk output to local file
      copy:
        content: "{{ base_disk.stdout }}"
        dest: "/tmp/disk_{{ inventory_hostname }}.txt"
+  tags: diskshow
 #     delegate_to: localhost
   tasks:
     - name: sshd config file
@@ -25,15 +28,18 @@
       notify:
               - Restart Apache
               - Restart Sshd
+    tags: sshconfg
   handlers:
     - name: Restart Apache
       ansible.builtin.service:
         name: httpd
         state: restarted
+    tags: apacherestart
     - name: Restart Sshd
       ansible.builtin.service:
         name: sshd
         state: restarted
+    tags: sshrestart
 
 
 
