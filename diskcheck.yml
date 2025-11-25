@@ -1,6 +1,6 @@
 ---
 - name: disk check on remote server
-  hosts: rhel-test
+  hosts: all
   become: yes
 
   tasks: 
